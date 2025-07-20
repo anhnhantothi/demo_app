@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_therapy/components/cubit/step_cubit.dart';
 import 'package:music_therapy/consent/cubit/consent_form_cubit.dart';
 import 'package:music_therapy/consent/view/consent_form.dart';
 
@@ -16,9 +17,11 @@ class ConsentFormApp extends StatelessWidget {
       title: 'Consent Form Demo',
       theme: ThemeData(primarySwatch: Colors.green),
       debugShowCheckedModeBanner: false,
-      home: BlocProvider(
-        create: (_) => ConsentFormCubit(),
-        child: const ConsentFormScreen(),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(create:(_) => ConsentFormCubit(),),
+        ],
+        child: const ConsentFormScreen(title: "title",),
       ),
     );
   }

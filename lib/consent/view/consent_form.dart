@@ -1,121 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_therapy/consent/cubit/consent_form_cubit.dart';
+import 'package:music_therapy/components/OptionToAnswer/models/QuestionModel.dart';
+import 'package:music_therapy/components/step.dart';
 import 'package:music_therapy/quesion_naire/view/questionnaire_screen.dart';
-import 'package:music_therapy/widget/step_press.dart';
+import '../../components/OptionToAnswer/Question.dart';
+import '../../components/cubit/step_cubit.dart';
 
-class ConsentFormScreen extends StatelessWidget {
-  const ConsentFormScreen({super.key});
+class ConsentFormScreen extends StatefulWidget {
+  const ConsentFormScreen({super.key, required this.title});
+  final String title;
+  @override
+  State<ConsentFormScreen> createState() => _ConsentFormScreenState();
+}
+
+class _ConsentFormScreenState extends State<ConsentFormScreen> {
+  final StepCubit cubit = StepCubit();
+
+  @override
+  void initState() {
+    cubit.initState(20);
+    print(cubit.state.totalStep);
+    super.initState();
+  }
+
+  List<QuestionModel> questions = [
+    QuestionModel(question: "1. Are you feeling calm?"),
+    QuestionModel(question: "2. Are you feeling calm?"),
+    QuestionModel(question: "3. Are you feeling calm?"),
+    QuestionModel(question: "4. Are you feeling calm?"),
+    QuestionModel(question: "5. Are you feeling calm?"),
+    QuestionModel(question: "6. Are you feeling calm?"),
+    QuestionModel(question: "7. Are you feeling calm?"),
+    QuestionModel(question: "8. Are you feeling calm?"),
+    QuestionModel(question: "9. Are you feeling calm?"),
+    QuestionModel(question: "10. Are you feeling calm?"),
+  ];
+
+  buildListQuestions() {
+    return Column(
+      spacing: 16,
+      children: [...questions.map((e) => QuestionComponent(data: e))],
+    );
+  }
+
+  buildStepOne() {
+    return Column(children: [buildListQuestions()]);
+  }
+
+  buildStepTwo() {
+    return QuestionnaireScreen(title: '');
+  }
+
+  buildContent() {
+    switch (cubit.state.currentStep) {
+      case 2:
+        {
+          return buildStepTwo();
+        }
+      default:
+        return buildStepOne();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: const Text(
-          'Melody Mindcare',
-          style: TextStyle(color: Colors.white),
+    return BlocProvider(
+      create: (context) => cubit,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.green,
+          title: Text(widget.title, style: TextStyle(color: Colors.white)),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: const StepProgressIndicator(currentStep: 1, totalSteps: 4),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Consent form",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Prospective Observational Study on the Effect of Music in Reducing Stress Before a Coronary Angiography",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  BlocBuilder<ConsentFormCubit, ConsentFormState>(
-                    builder: (context, state) {
-                      return Row(
-                        children: [
-                          Checkbox(
-                            value: state.isAccepted,
-                            onChanged: (value) {
-                              context.read<ConsentFormCubit>().toggleAccept(
-                                value ?? false,
-                              );
-                            },
-                          ),
-                          const Expanded(
-                            child: Text(
-                              "I have read and understood the consent form and voluntarily agree to participate in this study.",
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+        backgroundColor: Color(0xFFF1F2F2),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BlocProvider.value(value: cubit, child: StepProgressIndicator()),
+            Expanded(
+              child: SingleChildScrollView(
+                child: BlocBuilder<StepCubit, StepStatePress>(
+                  builder: (context, state) {
+                    return buildContent();
+                  },
+                ),
               ),
             ),
+          ],
+        ),
+        bottomNavigationBar: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              cubit.nextEvent();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text("Next", style: TextStyle(color: Colors.white)),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: BlocBuilder<ConsentFormCubit, ConsentFormState>(
-              builder: (context, state) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.green),
-                        ),
-                        child: const Text(
-                          "Reject",
-                          style: TextStyle(color: Colors.green),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed:
-                              state.isAccepted
-                                  ? () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) => const QuestionnaireScreen(),
-                                      ),
-                                    );
-                                  }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
-                          child: const Text(
-                            "Next",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
